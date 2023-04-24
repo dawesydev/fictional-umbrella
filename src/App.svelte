@@ -1,5 +1,6 @@
 <script>
     // @ts-nocheck
+    import { fade, fly } from 'svelte/transition'
 
     import './css/reset.css'
     import './css/style.css'
@@ -69,7 +70,7 @@
         if (todo.title.trim().length === 0) {
             todo.title = beforeEditCache
         }
-        
+
         todo.isEditing = false
         todos = todos
     }
@@ -92,6 +93,8 @@
             : currentFilter === 'active'
             ? todos.filter((todo) => !todo.isComplete)
             : todos.filter((todo) => todo.isComplete)
+
+    let noTodosContainer
 </script>
 
 <main>
@@ -110,8 +113,12 @@
             {#if todos.length > 0}
                 <!-- content here -->
                 <ul class="todo-list">
-                    {#each filteredTodos as todo}
-                        <li class="todo-item-container">
+                    {#each filteredTodos as todo (todo.id)}
+                        <li
+                            class="todo-item-container"
+                            in:fly={{ x: 100, duration: 2000 }}
+                            out:fade={{ duration: 1000 }}
+                        >
                             <div class="todo-item">
                                 <input
                                     type="checkbox"
@@ -134,7 +141,8 @@
                                         bind:value={todo.title}
                                         on:blur={doneEdit(todo)}
                                         autofocus
-                                        on:keydown={event => doneEditKeydown(event, todo)}
+                                        on:keydown={(event) =>
+                                            doneEditKeydown(event, todo)}
                                     />
                                 {/if}
                             </div>
@@ -166,8 +174,15 @@
                             >Check All</button
                         >
                     </div>
-
-                    <span>{remainingTodos} items remaining</span>
+                    <div>
+                        {#key remainingTodos}
+                            <span
+                                style="display: inline-block"
+                                in:fly={{ y: -20 }}>{remainingTodos}</span
+                            >
+                        {/key}
+                        <span>items remaining</span>
+                    </div>
                 </div>
 
                 <div class="other-buttons-container">
@@ -200,7 +215,15 @@
                 </div>
             {:else}
                 <!-- else content here -->
-                <div class="no-todos-container">
+                <div
+                    bind:this={noTodosContainer}
+                    class="no-todos-container"
+                    transition:fade
+                    on:introstart={() =>
+                        (noTodosContainer.style = 'display: none')}
+                    on:introend={() =>
+                        (noTodosContainer.style = 'display: block')}
+                >
                     <div class="no-todos-svg-container">
                         <svg
                             xmlns="http://www.w3.org/2000/svg"
