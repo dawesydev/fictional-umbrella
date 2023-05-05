@@ -6,7 +6,7 @@
     let todoTitle = ''
 
     function addTodo() {
-        dispatch("todoAdded", {
+        dispatch('todoAdded', {
             todoTitle,
         })
         todoTitle = ''
